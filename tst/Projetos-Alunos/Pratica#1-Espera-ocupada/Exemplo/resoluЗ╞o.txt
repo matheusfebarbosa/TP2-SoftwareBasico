@@ -1,0 +1,45 @@
+/*******************************************************************************
+ *                   UNIVERSIDADE FEDERAL DE MINAS GERAIS                      *
+ *                      ESCOLA DE VERÃO EM COMPUTAÇÃO                          *
+ *******************************************************************************
+ *                          APLICAÇÃO - POOLING                                *
+ *******************************************************************************
+ CODIFIQUE DE LINGUAGEM C PARA MSP430 UM PROGRAMA QUE VERIFIQUE O ESTADO DO
+ PUSH BUTTON(P1.3) DE FORMA QUE ELE FUNCIONE COMO UM SENSOR DE TOQUE QUE AO SER
+ ACIONADO ADCIONE O VALOR 1 A UMA VARIAVEL CONTADORA E COMO CONTROLE UM DOS 
+ LEDS(P1.0, P1.6) DEVERÁ ACENDER E O OUTRO APAGAR DE FORMA QUE FIQUEM ALTERNANDO,
+SE O VALOR NA VARIAVEL CONTADORA FOR UM NUMERO PAR OU IMPAR.
+ 
+ *******************************************************************************
+*/
+#include "msp430g2231.h"
+int count = 0;
+int main( void )
+{
+  //Desliga Watchdog Timer
+  WDTCTL = WDTPW + WDTHOLD;
+  P1DIR |= 0x01 + 0x40;
+ 
+  P1OUT = 0;
+  while(1)
+  {
+   
+    if(P1IN & 0x08)
+    {
+     //P1OUT = 0x01; 
+     count++; 
+   
+    }
+    else
+   // else
+     // P1OUT = ~0x01;
+    if(count % 2 == 0)
+    {
+      P1OUT = 0x01; 
+      
+    }
+else
+P1OUT = ~0x01;
+  }
+ 
+}

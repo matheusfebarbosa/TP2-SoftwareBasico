@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<workspace>
+  <project>
+    <path>$WS_DIR$\..\..\Pratica#4-Conversor-AD\Exemplo\conversor.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\..\..\Pratica#4-Conversor-AD\Resolução\Conversor a - d - Resolução.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\..\..\Pratica#2-Interrupcao\Exemplo\interrupçao.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\..\..\Pratica#2-Interrupcao\Resolução\Interrupção - Resolução.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\pooling.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\..\Resolução\Pooling - resolução.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\..\..\Pratica#3-Temporizador\Exemplo\timer.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\..\..\Pratica#3-Temporizador\Resolução\Timer - Resolução.ewp</path>
+  </project>
+  <batchBuild/>
+</workspace>
+
+

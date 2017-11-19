@@ -1,0 +1,46 @@
+/*******************************************************************************
+ *                   UNIVERSIDADE FEDERAL DE MINAS GERAIS                      *
+ *                      ESCOLA DE VERÃO EM COMPUTAÇÃO                          *
+ *******************************************************************************
+ *                     APLICAÇÃO - INTERRUPÇÕES                                *
+ *******************************************************************************
+ CODIFIQUE EM LINGUAGEM C PARA MSP430 QUE MONITORE QUANTOS PRODUTOS PASSAM POR 
+ UMA ESTEIRA E QUANDO EXCEDER UM NÚMERO MÁXIMO DE ITENS(5) EMITA UM SINAL     
+ LUMINOSO.USE COMO ENTRADA O PUSH BUTTON PRESENTE NO KIT(P1.3) E COMO SAÍDA UM
+ DOS LEDS PRESENTES NO KIT (P1.0, P1.6).                                      
+ 
+ *******************************************************************************
+*/
+#include "msp430g2231.h" 
+int count = 0; 
+  
+void main(void)
+{
+  WDTCTL = WDTPW + WDTHOLD;                 // Desliga Watchdog Timer 
+  
+ 
+ 
+  P1DIR |= 0x40;                     // P1.6 configurado como saída (00100000)
+  P1OUT = 0x00;                        // Seta saída como estado lógico 0(00000000);
+  P1IE = 0x08;                             // Configura interrupção no pino 1.3 (00001000)
+  
+  P1IFG = 0;                       // Flag de interrupção do pino 1.3 zerado(00000000).
+  _BIS_SR(CPUOFF + GIE);                    // Entra em modo de baixo consumo desligando a CPU e operando por interrupções
+  while(1)                                  
+  {}
+} 
+  
+
+// Rotina de serviço de interrupção da porta 1
+#pragma vector=PORT1_VECTOR
+__interrupt void Port_1(void)
+{    
+   count++;
+   P1IFG &= ~0x08;                     // P1.3 Limpa Flag de interrupção 
+//Verifica se variavel contadora atingiu o limite de itens que no caso abaixo são 5
+if(count == 5)
+{
+P1OUT ^= 0x40; //Emite sinal luminoso
+
+}
+}

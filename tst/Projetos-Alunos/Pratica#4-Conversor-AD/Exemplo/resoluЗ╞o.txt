@@ -1,0 +1,79 @@
+/*******************************************************************************
+ *                   UNIVERSIDADE FEDERAL DE MINAS GERAIS                      *
+ *                      ESCOLA DE VERÃO EM COMPUTAÇÃO                          *
+ *******************************************************************************
+ *                     APLICAÇÃO - CONVERSOR A/D                               *
+ *******************************************************************************
+ CODIFIQUE DE LINGUAGEM C PARA MSP430 UM PROGRAMA QUE VERIFIQUE SE HÁ VARIAÇÃO
+ DE TEMPERATURA INTERNA NO MICROCONTROLADOR FAÇA COM QUE O LED VERMELHO(P1.0) 
+ ACENDA SE A VARIAÇÃO DE TEMPERATURA FOR POSITIVA E QUE O LED VERDE(P1.6)
+ ACENDA SE A VARIAÇÃO DE TEMPERATURA FOR NEGATIVA REFERENTE A TEMPERATURA CALIBRADA
+ O SENSOR DE TEMPERATURA É CALIBRADO QUANDO O MSP430 É LIGADO(tempCalibrated).
+ UTILIZE O CODIGO ABAIXO COMO PONTO DE PARTIDA.
+ *******************************************************************************
+*/
+#include "msp430g2231.h"
+//Variavel que recebe o valor do conversor a/d ao ser ligado
+unsigned int tempCalibrated = 0;
+
+//Rotina de configuração do conversor a/d
+void ConfigureAdc(void)
+{
+ 
+  
+  ADC10CTL1 = INCH_10 + ADC10DIV_3;        
+  ADC10CTL0 = SREF_0 + ADC10SHT_3 + REFON + ADC10ON + ADC10IE;
+ __delay_cycles(1000);                   
+    ADC10CTL0 |= ENC + ADC10SC;            
+    __bis_SR_register(CPUOFF + GIE);  
+    tempCalibrated = ADC10MEM;
+ 
+}
+
+unsigned int value = 0;
+
+#pragma vector=ADC10_VECTOR
+__interrupt void ADC10_ISR (void)
+{
+  __bic_SR_register_on_exit(CPUOFF);       
+}
+
+int main( void )
+{
+  
+  WDTCTL = WDTPW + WDTHOLD;    // Desliga Watchdog Timer            
+  BCSCTL1 = CALBC1_1MHZ;       // Seleciona fonte de clock           
+  DCOCTL = CALDCO_1MHZ;        // Configura fonte de clock
+  BCSCTL2 &= ~(DIVS_3);        // Demais configurações de clock         
+  P1DIR |= 0x01 + 0x040;       // Seleciona pinos 1.0 e 1.6 como saída(01000001)   
+  P1OUT = 0;                   // Coloca todas as saídas em estado lógico 0 
+   
+  ConfigureAdc();    
+  __enable_interrupt();        //Habilita interrupções
+  
+  
+   while(1)
+  {    
+   
+    __delay_cycles(1000);                  
+    //Obtem o valor do conversor a/d no canal selecionado e especifica o sensor interno de temperatura
+    ADC10CTL0 |= ENC + ADC10SC; 
+    //Desliga CPU Operando por interrupções após executar toda o codigo dentro do while
+    __bis_SR_register(CPUOFF + GIE);          
+   //Obtem o valor do conversor a/d para uma variavel para futura comparação
+    value= ADC10MEM;
+    if (value > tempCalibrated)
+    {
+       P1OUT = 0x01;
+     
+    }
+    else
+      if(value < tempCalibrated)    
+       P1OUT = 0x40;
+    
+}
+  
+}
+ 
+
+

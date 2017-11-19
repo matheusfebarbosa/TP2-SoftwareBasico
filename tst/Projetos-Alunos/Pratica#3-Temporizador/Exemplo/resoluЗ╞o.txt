@@ -1,0 +1,45 @@
+/*******************************************************************************
+ *                   UNIVERSIDADE FEDERAL DE MINAS GERAIS                      *
+ *                      ESCOLA DE VERÃO EM COMPUTAÇÃO                          *
+ *******************************************************************************
+ *                           APLICAÇÃO - TIMER                                 *
+ *******************************************************************************
+ CODIFIQUE DE LINGUAGEM C PARA MSP430 UM PROGRAMA QUE SIMULE UM SEMAFORO EM QUE
+ DOIS SINAIS VERDE E VERMELHO CORRESONDENTE AOS LEDS PRESENTES NO KIT SEJAM 
+ ACIONADOS COM AS SEGUINTES CONDIÇÕES:
+ SINAL VERMELHO PERMANECE POR ~20 SEGUNDOS
+ SINAL VERDE PERMANECE POR ~10 SEGUNDOS
+ SOMENTE UM LED ACIONADO POR VEZ
+
+ *******************************************************************************
+*/
+#include "msp430g2231.h"  
+ int segundos = 0;
+void main(void)
+{
+  WDTCTL = WDTPW + WDTHOLD;                 
+  CCTL0 = CCIE;                    // Habilita interrupção no registrador CCR0           
+  TACTL = TASSEL_2 + MC_3 + ID_3;  //SMCLK/8 = 1MHz/8 = 125000hz      
+  CCR0 =  62500;                   // 1/125000hz = 0,000008s essa variavel é incrementada a cada 0,000008s(8us), quando chegar ao valor estipulado e voltar novamente a 0 será gerada interrupção
+  P1DIR |= 0x01 + 0x40 ;           // Seleciona como saida os pino 1.0 e 1.6 (01000001)
+  P1OUT = 0x00;                    //Coloca todos os pinos em estado logico 0
+              
+  _BIS_SR(CPUOFF + GIE);           //Desliga CPU funcionando por interrupções         
+  while(1)                              
+  {}
+} 
+  
+// Timer A0 interrupt service routine 
+#pragma vector=TIMERA0_VECTOR 
+__interrupt void Timer_A (void) 
+{   
+  segundos++; 
+  if(segundos < 20)
+  P1OUT =0x01; 
+  if(segundos > 20)
+  {
+    P1OUT = 0x40;
+    if(segundos == 30)
+      segundos = 0;
+  }
+  } 
