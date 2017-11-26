@@ -5,9 +5,9 @@ volatile unsigned int temporizador = 0;
 void main(void) {
  
   WDTCTL = WDTPW + WDTHOLD;   // Desliga Watchdog timer
-  P1DIR = 0x01 + 0x40;        // Define pino 1.0 como saída (0001)
+  P1DIR = 0x01 + 0x40;        // Define os pinos 1.0 e 1.6 como saída (0100 0001)
   P1REN = 0x08;              // Habilita pullup/pulldown do pino 1.3 (0000 1000)
-  P1OUT = 0x08 + 0x01;       // Define pullup para o pino 1.3 (0000 1000)
+  P1OUT = 0x08 + 0x01;       // Define pullup para o pino 1.3 e liga o led 1.0 (0000 1001)
 
   CCTL0 = CCIE;               // Habilita interrupção de comparação do timer A           
   TACTL = TASSEL_2+MC_3+ID_3; // SMCLK = 1 MHz, SMCLK/8 = 125 KHz (8 us)      
@@ -43,7 +43,7 @@ __interrupt void Timer_A (void) {
 #pragma vector=PORT1_VECTOR  // Rotina de tratamento de interrupção da porta 1
 __interrupt void Port_1(void) {
     if(P1OUT & 0x40 && !(P1OUT & 0x01) && temporizador <=5){
-      temporizador = 5;
+      temporizador = 5;         
       P1IFG = 0x00;             // Zera flag de interrupção da porta 1 (00000000)
     }
 }

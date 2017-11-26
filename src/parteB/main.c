@@ -68,14 +68,16 @@ void task1(void)
 { 
   volatile unsigned int i;
 
-  P1DIR |= 0x01; /*for LED P1.0*/
+  P1DIR =  P1DIR  | 0x01; /*for LED P1.0*/
 
   while(1)
   {
-    for (i=0; i < 65535; i++);
-    for (i=0; i < 65535; i++);
+    for (i=0; i < 65535; i++)
+      __no_operation();
+    for (i=0; i < 65535; i++)
+      __no_operation();
 
-    P1OUT ^= 0x01;    // Toggle P1.0 (LED)
+    P1OUT = P1OUT ^ 0x01;    // Toggle P1.0 (LED)
   }
 }
 
@@ -83,27 +85,39 @@ void task2(void)
 {
   volatile unsigned int i;
 
-  P1DIR |= 0x40; /*for LED P4.0*/
+  P1DIR =  P1DIR  | 0x40; /*for LED P4.0*/
 
   while(1)
   {
 
-    for (i=0; i < 65535; i++);
-    for (i=0; i < 65535; i++);
-    for (i=0; i < 65535; i++);
-    for (i=0; i < 65535; i++);
-    for (i=0; i < 65535; i++);
-    for (i=0; i < 65535; i++);
-    for (i=0; i < 65535; i++);
-    for (i=0; i < 65535; i++);
+    for (i=0; i < 65535; i++)
+      __no_operation();
+    for (i=0; i < 65535; i++)
+      __no_operation();
+    for (i=0; i < 65535; i++)
+      __no_operation();
+    for (i=0; i < 65535; i++)
+      __no_operation();
+    for (i=0; i < 65535; i++)
+      __no_operation();
+    for (i=0; i < 65535; i++)
+      __no_operation();
+    for (i=0; i < 65535; i++)
+      __no_operation();
+    for (i=0; i < 65535; i++)
+      __no_operation();
 
-    P1OUT ^= 0x40;    // Toggle P4.0 (LED)
+
+    P1OUT = P1OUT ^ 0x40;    // Toggle P4.0 (LED)
   }    
 }
 
 void task3(void)
 {
-    
+  while(1)
+  {
+
+  }  
 }
 
 
@@ -125,7 +139,7 @@ uint16_t *initialise_stack(void (* func)(void), uint16_t *stack_location)
   *stack_location = (uint16_t)func; //last 16 bits will only stored. Pending 4bits will be stored with SR
   stack_location--;
   /*refer datasheet to see how 20bit PC is stored along with SR*/
-  *stack_location = (((uint16_t)((uint32_t)(0xf0000 & (uint32_t)func) >> 4))| DEFAULT_SR); 
+  *stack_location = (DEFAULT_SR); 
   //stack_location--;
 
   /*leave space in stack for r4 to r15*/
@@ -138,7 +152,6 @@ uint16_t *initialise_stack(void (* func)(void), uint16_t *stack_location)
 }
 
 
-  
 volatile uint16_t *temp;
 void main(void)
 {
@@ -148,16 +161,16 @@ void main(void)
  
   
   /*initialise stack for each task*/
-  stack_pointer[0] = initialise_stack(task1, &task1ram[STACK_TOP]); // initialize stack 0
+  stack_pointer[0] = initialise_stack(task1, &task1ram[STACK_TOP]);// initialize stack 0
   stack_pointer[1] = initialise_stack(task2, &task2ram[STACK_TOP]);// initialize stack 1
   stack_pointer[2] = initialise_stack(task3, &task3ram[STACK_TOP]);// initialize stack 2
   
 
   CCTL0 = CCIE;               // Habilita interrupção de comparação do timer A           
-  TACTL = TASSEL_2+MC_3+ID_3; // SMCLK = 1 MHz, SMCLK/8 = 125 KHz (8 us)      
-  CCR0 =  62500;              // Modo up/down: chega no valor e depois volta
+  TACTL = TASSEL_2+MC_3;     // SMCLK = 1 MHz, SMCLK/8 = 125 KHz (8 us)      
+  CCR0 =  65535;              // Modo up/down: chega no valor e depois volta
 
-  
+ 
   /*initialise to first task*/
   task_id = 0;
   temp = stack_pointer[task_id];
@@ -170,21 +183,21 @@ void main(void)
 }
 
 #pragma vector=TIMER0_A0_VECTOR
-__interrupt void Timer_A (void)
+__interrupt void __attribute__((naked)) Timer_A (void)
 {
 
-  SAVE_CONTEXT();//0 -Save Context 
+  SAVE_CONTEXT();                   //0 -Save Context 
 
-  LOAD_STACK_POINTER(temp)//1-Load Stack Pointer
+  LOAD_STACK_POINTER(temp)          //1-Load Stack Pointer
   stack_pointer[task_id] = temp;
 
-  task_id++;      //2-update the task id
+  task_id++;                        //2-update the task id
   if(task_id == TOTAL_TASKS)
     task_id = 0;
 
   temp = stack_pointer[task_id];
-  SAVE_STACK_POINTER(temp)//3-Save Stack pointer
+  SAVE_STACK_POINTER(temp)          //3-Save Stack pointer
 
-  RESTORE_CONTEXT();//4 Load Context 
+  RESTORE_CONTEXT();                //4 Load Context 
   
 }
