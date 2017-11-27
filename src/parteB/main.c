@@ -66,16 +66,15 @@ volatile uint8_t button1 = 0x1, button2=0x1; /*volatile since its a shared resou
 
 void task1(void)
 { 
-  volatile unsigned int i;
+  volatile unsigned int i,j;
 
   P1DIR =  P1DIR  | 0x01; /*for LED P1.0*/
 
   while(1)
   {
-    for (i=0; i < 65535; i++)
-      __no_operation();
-    for (i=0; i < 65535; i++)
-      __no_operation();
+    for(j=0; j<(2 + 8 * !button2); j++)
+      for (i=0; i < 65535; i++)
+        __no_operation();
 
     P1OUT = P1OUT ^ 0x01;    // Toggle P1.0 (LED)
   }
@@ -83,30 +82,15 @@ void task1(void)
 
 void task2(void)
 {
-  volatile unsigned int i;
+  volatile unsigned int i,j;
 
   P1DIR =  P1DIR  | 0x40; /*for LED P4.0*/
 
   while(1)
   {
-
+  for(j=0; j<(2 + 8 * button2); j++)
     for (i=0; i < 65535; i++)
       __no_operation();
-    for (i=0; i < 65535; i++)
-      __no_operation();
-    for (i=0; i < 65535; i++)
-      __no_operation();
-    for (i=0; i < 65535; i++)
-      __no_operation();
-    for (i=0; i < 65535; i++)
-      __no_operation();
-    for (i=0; i < 65535; i++)
-      __no_operation();
-    for (i=0; i < 65535; i++)
-      __no_operation();
-    for (i=0; i < 65535; i++)
-      __no_operation();
-
 
     P1OUT = P1OUT ^ 0x40;    // Toggle P4.0 (LED)
   }    
@@ -116,7 +100,11 @@ void task3(void)
 {
   while(1)
   {
-
+    if(!button1){ 
+      button2 ^= 0x01;
+      button1 = 0x01;
+       
+    }
   }  
 }
 
@@ -170,7 +158,11 @@ void main(void)
   TACTL = TASSEL_2+MC_3;     // SMCLK = 1 MHz, SMCLK/8 = 125 KHz (8 us)      
   CCR0 =  65535;              // Modo up/down: chega no valor e depois volta
 
- 
+  P1REN = 0x08;              // Habilita pullup/pulldown do pino 1.3 (0000 1000)
+  P1OUT = 0x08;             // Define pullup para o pino 1.3(0000 1000)
+  P1IE = 0x08;               // Habilita interrupção no pino 1.3 (00001000)
+  P1IFG = 0x00;              // Zera flag de interrupção da porta 1 (00000000)
+
   /*initialise to first task*/
   task_id = 0;
   temp = stack_pointer[task_id];
@@ -200,4 +192,10 @@ __interrupt void __attribute__((naked)) Timer_A (void)
 
   RESTORE_CONTEXT();                //4 Load Context 
   
+}
+
+#pragma vector=PORT1_VECTOR  // Rotina de tratamento de interrupção da porta 1
+__interrupt void Port_1(void) {
+    button1 = 0x00;
+    P1IFG = 0x00;
 }
